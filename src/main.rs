@@ -81,6 +81,15 @@ fn init() {
         .arg("main")
         .output()
         .expect("failed to initialize git worktree");
+
+    // remove the temp origin
+    let _ = std::env::set_current_dir("main");
+    Command::new("git")
+        .arg("remote")
+        .arg("remove")
+        .arg("origin")
+        .output()
+        .expect("failed to remove temporary origin");
 }
 
 fn new(name: String) {
@@ -150,7 +159,10 @@ fn clone(uri: String) {
             }
         }
         Err(e) => {
-            eprintln!("An error occurred while attempting to create the worktree {}", e);
+            eprintln!(
+                "An error occurred while attempting to create the worktree {}",
+                e
+            );
         }
     }
 }
