@@ -22,5 +22,12 @@ fn main() -> std::io::Result<()> {
     let mut buffer: Vec<u8> = Default::default();
     man.render(&mut buffer)?;
     std::fs::write(out_dir.join("shake.1"), buffer)?;
+
+    let _ = std::process::Command::new("gzip")
+        .arg(out_dir.join("shake.1"))
+        .spawn()
+        .expect("failed to spawn gzip")
+        .wait();
+
     Ok(())
 }
