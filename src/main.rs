@@ -9,18 +9,22 @@ struct Cli {
 
 #[derive(Debug, Parser)]
 enum SubCommand {
+    /// Create a new project in the current directory
     #[clap(name = "init")]
     Init,
+    /// Create a new project in a directory with the given name
     #[clap(name = "new")]
     New { name: String },
+    /// Create a project structure with the project at the given uri
     #[clap(name = "clone")]
     Clone { uri: String },
 }
 
-// project file structure
-// project-name/
-//     .git # the bare repository
-//     main/ # worktrees!
+fn init(cargo: bool) {
+    // project file structure
+    // project-name/
+    //     .git # the bare repository
+    //     main/ # worktrees!
 
 fn init() {
     // initialize git
