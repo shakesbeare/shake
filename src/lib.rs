@@ -1,3 +1,4 @@
+
 use clap::Parser;
 use std::process::Command;
 
@@ -48,9 +49,7 @@ pub fn init(cargo: bool, lfs: bool) {
 
     // initialize git
     Command::new("git")
-        .arg("init")
-        .arg("--bare")
-        .arg(".git")
+        .args(["init", "--bare", ".git"])
         .output()
         .expect("failed to initialize git");
 
@@ -76,59 +75,44 @@ pub fn init(cargo: bool, lfs: bool) {
 
     if lfs {
         let _ = Command::new("git")
-            .arg("lfs")
-            .arg("install")
+            .args(["lfs", "install"])
             .spawn()
             .expect("failed to install git-lfs")
             .wait();
     }
 
     Command::new("git")
-        .arg("add")
-        .arg(".")
+        .args(["add", "."])
         .output()
         .expect("failed to add temp dir to git repository");
     Command::new("git")
-        .arg("commit")
-        .arg("-m")
-        .arg("\"initial commit\"")
+        .args(["commit", "-m", "\"initial commit\""])
         .output()
         .expect("failed to commit to git");
     Command::new("git")
-        .arg("remote")
-        .arg("add")
-        .arg("origin")
-        .arg("../.git")
+        .args(["remote", "add", "origin", "../.git"])
         .output()
         .expect("failed to add git remote");
     Command::new("git")
-        .arg("push")
-        .arg("-u")
-        .arg("origin")
-        .arg("main")
+        .args(["push", "-u", "origin", "main"])
         .output()
         .expect("failed to push to remote");
 
     // finish setting up project
     let _ = std::env::set_current_dir("..");
     Command::new("rm")
-        .arg("-rf")
-        .arg("temp")
+        .args(["-rf", "temp"])
         .output()
         .expect("failed to remove temp dir");
     Command::new("git")
-        .arg("worktree")
-        .arg("add")
-        .arg("main")
+        .args(["worktree", "add", "main"])
         .output()
         .expect("failed to initialize git worktree");
 
     // remove the temp origin
     let _ = std::env::set_current_dir("main");
     Command::new("git")
-        .arg("remote")
-        .arg("remove")
-        .arg("origin")
+        .args(["remote", "remove", "origin"])
         .output()
         .expect("failed to remove temporary origin");
 }
@@ -162,10 +146,7 @@ pub fn clone(uri: String, branch: String) {
     let _ = std::env::set_current_dir(folder_name);
 
     let clone_status = Command::new("git")
-        .arg("clone")
-        .arg("--bare")
-        .arg(&uri)
-        .arg(".git")
+        .args(["clone", "--bare", &uri, ".git"])
         .spawn()
         .expect("failed to spawn `git clone` child process")
         .wait();
@@ -184,9 +165,7 @@ pub fn clone(uri: String, branch: String) {
     }
 
     let worktree_status = Command::new("git")
-        .arg("worktree")
-        .arg("add")
-        .arg(branch)
+        .args(["worktree", "add", branch])
         .spawn()
         .expect("failed to checkout main worktree")
         .wait();

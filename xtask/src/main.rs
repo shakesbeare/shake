@@ -65,12 +65,12 @@ fn install() -> std::io::Result<()> {
     // 2) build manpage
     // 3) copy manpage to /usr/local/man/man1/
     Command::new("cargo")
-        .args(vec!["install", "--path", "."])
+        .args(["install", "--path", "."])
         .spawn()
         .expect("failed to spawn `cargo install`")
         .wait()?;
     Command::new("cargo")
-        .args(vec!["xtask", "manpage"])
+        .args(["xtask", "manpage"])
         .spawn()
         .expect("failed to spawn `cargo xtask manpage`")
         .wait()?;
