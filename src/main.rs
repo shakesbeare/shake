@@ -15,6 +15,9 @@ enum SubCommand {
         /// Initialize the project with cargo
         #[arg(long = "cargo")]
         cargo: bool,
+        /// Install git-lfs into the project
+        #[arg(long = "lfs")]
+        lfs: bool,
     },
     /// Create a new project in a directory with the given name
     #[clap(name = "new")]
@@ -23,13 +26,16 @@ enum SubCommand {
         /// Initialize the project with cargo
         #[arg(long = "cargo")]
         cargo: bool,
+        /// Install git-lfs into the project
+        #[arg(long = "lfs")]
+        lfs: bool,
     },
     /// Create a project structure with the project at the given uri
     #[clap(name = "clone")]
     Clone { uri: String },
 }
 
-fn init(cargo: bool) {
+fn init(cargo: bool, lfs: bool) {
     // project file structure
     // project-name/
     //     .git # the bare repository
@@ -53,11 +59,22 @@ fn init(cargo: bool) {
         .expect("failed to initialize temp inner repository");
 
     std::fs::File::create("README.md").expect("failed to create README.md");
+
+    // handle optional project details
     if cargo {
         let _ = Command::new("cargo")
             .arg("init")
             .spawn()
             .expect("failed to spawn `cargo init`")
+            .wait();
+    }
+
+    if lfs {
+        let _ = Command::new("git")
+            .arg("lfs")
+            .arg("install")
+            .spawn()
+            .expect("failed to install git-lfs")
             .wait();
     }
 
@@ -111,7 +128,7 @@ fn init(cargo: bool) {
         .expect("failed to remove temporary origin");
 }
 
-fn new(name: String, cargo: bool) {
+fn new(name: String, cargo: bool, lfs: bool) {
     // create new dir with the project name
     std::fs::create_dir(&name).expect("failed to create new project directory");
 
@@ -119,7 +136,7 @@ fn new(name: String, cargo: bool) {
     std::env::set_current_dir(&name)
         .expect("failed to change to new project directory");
 
-    init(cargo);
+    init(cargo, lfs);
 }
 
 fn clone(uri: String) {
@@ -190,8 +207,8 @@ fn main() {
     let app = Cli::parse();
 
     match app.subcmd {
-        SubCommand::Init { cargo } => init(cargo),
-        SubCommand::New { name, cargo } => new(name, cargo),
+        SubCommand::Init { cargo, lfs } => init(cargo, lfs),
+        SubCommand::New { name, cargo, lfs } => new(name, cargo, lfs),
         SubCommand::Clone { uri } => clone(uri),
     }
 }
