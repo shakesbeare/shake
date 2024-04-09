@@ -1,4 +1,3 @@
-workspace = { members = ["project/main"] }
 [package]
 name = "shake"
 version = "0.1.0"

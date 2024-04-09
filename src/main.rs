@@ -13,6 +13,8 @@ enum SubCommand {
     Init,
     #[clap(name = "new")]
     New { name: String },
+    #[clap(name = "clone")]
+    Clone { uri: String },
 }
 
 // project file structure
@@ -21,15 +23,6 @@ enum SubCommand {
 //     main/ # worktrees!
 
 fn init() {
-    // get the name of the current directory and use it as the project name
-    let _ = std::env::current_dir()
-        .unwrap()
-        .file_name()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .to_string();
-
     // initialize git
     Command::new("git")
         .arg("init")
@@ -101,11 +94,73 @@ fn new(name: String) {
     init();
 }
 
+fn clone(uri: String) {
+    // get folder name from repo string
+    // format: git@github.com:username/repo.git
+    //     or: host:username/repo.git
+
+    let Some((_, user_repo)) = uri.split_once(':') else {
+        eprintln!("Invalid repo URI\nFormat: git@github.com:username/repo.git");
+        std::process::exit(1);
+    };
+    let Some((_, repo)) = user_repo.split_once('/') else {
+        eprintln!("Invalid repo URI\nFormat: git@github.com:username/repo.git");
+        std::process::exit(1);
+    };
+    let folder_name = repo.trim_end_matches(".git");
+    let _ = std::fs::create_dir(folder_name);
+    let _ = std::env::set_current_dir(folder_name);
+
+    let clone_status = Command::new("git")
+        .arg("clone")
+        .arg("--bare")
+        .arg(&uri)
+        .arg(".git")
+        .spawn()
+        .expect("failed to spawn `git clone` child process")
+        .wait();
+
+    match clone_status {
+        Ok(s) => {
+            if !s.success() {
+                // clean up folder
+                let _ = std::env::set_current_dir("..");
+                let _ = std::fs::remove_dir_all(format!("./{}", folder_name));
+            }
+        }
+        Err(e) => {
+            eprintln!("An error occurred while attempting to clone {}", e);
+        }
+    }
+
+    let worktree_status = Command::new("git")
+        .arg("worktree")
+        .arg("add")
+        .arg("main")
+        .spawn()
+        .expect("failed to checkout main worktree")
+        .wait();
+
+    match worktree_status {
+        Ok(s) => {
+            if !s.success() {
+                // clean up folder
+                let _ = std::env::set_current_dir("..");
+                let _ = std::fs::remove_dir_all(format!("./{}", folder_name));
+            }
+        }
+        Err(e) => {
+            eprintln!("An error occurred while attempting to create the worktree {}", e);
+        }
+    }
+}
+
 fn main() {
     let app = Cli::parse();
 
     match app.subcmd {
         SubCommand::Init => init(),
         SubCommand::New { name } => new(name),
+        SubCommand::Clone { uri } => clone(uri),
     }
 }
