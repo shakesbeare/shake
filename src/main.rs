@@ -11,10 +11,19 @@ struct Cli {
 enum SubCommand {
     /// Create a new project in the current directory
     #[clap(name = "init")]
-    Init,
+    Init {
+        /// Initialize the project with cargo
+        #[arg(long = "cargo")]
+        cargo: bool,
+    },
     /// Create a new project in a directory with the given name
     #[clap(name = "new")]
-    New { name: String },
+    New {
+        name: String,
+        /// Initialize the project with cargo
+        #[arg(long = "cargo")]
+        cargo: bool,
+    },
     /// Create a project structure with the project at the given uri
     #[clap(name = "clone")]
     Clone { uri: String },
@@ -26,7 +35,6 @@ fn init(cargo: bool) {
     //     .git # the bare repository
     //     main/ # worktrees!
 
-fn init() {
     // initialize git
     Command::new("git")
         .arg("init")
@@ -45,6 +53,13 @@ fn init() {
         .expect("failed to initialize temp inner repository");
 
     std::fs::File::create("README.md").expect("failed to create README.md");
+    if cargo {
+        let _ = Command::new("cargo")
+            .arg("init")
+            .spawn()
+            .expect("failed to spawn `cargo init`")
+            .wait();
+    }
 
     Command::new("git")
         .arg("add")
@@ -96,7 +111,7 @@ fn init() {
         .expect("failed to remove temporary origin");
 }
 
-fn new(name: String) {
+fn new(name: String, cargo: bool) {
     // create new dir with the project name
     std::fs::create_dir(&name).expect("failed to create new project directory");
 
@@ -104,7 +119,7 @@ fn new(name: String) {
     std::env::set_current_dir(&name)
         .expect("failed to change to new project directory");
 
-    init();
+    init(cargo);
 }
 
 fn clone(uri: String) {
@@ -175,8 +190,8 @@ fn main() {
     let app = Cli::parse();
 
     match app.subcmd {
-        SubCommand::Init => init(),
-        SubCommand::New { name } => new(name),
+        SubCommand::Init { cargo } => init(cargo),
+        SubCommand::New { name, cargo } => new(name, cargo),
         SubCommand::Clone { uri } => clone(uri),
     }
 }
