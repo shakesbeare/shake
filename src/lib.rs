@@ -1,7 +1,6 @@
-
+use anyhow::Result;
 use clap::Parser;
 use std::process::Command;
-use anyhow::Result;
 
 #[derive(Debug, Parser)]
 pub struct Cli {
@@ -34,11 +33,23 @@ pub enum SubCommand {
     },
     /// Create a project structure with the project at the given uri
     #[clap(name = "clone")]
-    Clone { 
+    Clone {
         uri: String,
         /// Checkout a specific branch for the first worktree
         #[arg(long = "branch", short, default_value_t = String::from("main"))]
         branch: String,
+    },
+    /// Checkout a branch using worktrees
+    #[clap(name = "checkout")]
+    Checkout {
+        /// The name of the branch to checkout as a worktree
+        branch: String,
+        /// Create the branch
+        #[arg(short)]
+        b: bool,
+        /// Only useful with -b. Force branch creation to occur even if the branch already exists
+        #[arg(long = "force", short)]
+        force: bool,
     },
 }
 
@@ -129,6 +140,54 @@ pub fn new(name: String, cargo: bool, lfs: bool) -> Result<()> {
         .expect("failed to change to new project directory");
 
     init(cargo, lfs)?;
+
+    Ok(())
+}
+
+struct CommandBuilder<'a> {
+    args: Vec<&'a str>,
+}
+
+impl<'a> CommandBuilder<'a> {
+    fn new() -> Self {
+        CommandBuilder { args: vec![] }
+    }
+    fn arg(&mut self, arg: &'a str) {
+        self.args.push(arg);
+    }
+
+    fn args(&mut self, args: &[&'a str]) {
+        self.args.extend(args);
+    }
+
+    fn into_command(self) -> Command {
+        let mut command = Command::new(self.args[0]);
+        for arg in self.args.iter().skip(1) {
+            command.arg(arg);
+        }
+
+        command
+    }
+}
+
+pub fn checkout(branch: String, b: bool, force: bool) -> Result<()> {
+    // if -b flag is present, simply add the worktree
+    let mut builder = CommandBuilder::new();
+    let path = format!("../{}", &branch);
+    if b {
+        builder.args(&["git", "worktree", "add", &path]);
+        if force {
+            builder.arg("-f");
+        }
+    } else {
+        builder.args(&["git", "worktree", "add", &path, &branch]);
+    }
+
+    builder
+        .into_command()
+        .spawn()
+        .expect("failed to spawn command")
+        .wait()?;
 
     Ok(())
 }

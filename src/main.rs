@@ -9,5 +9,6 @@ fn main() -> Result<()> {
         SubCommand::Init { cargo, lfs } => init(cargo, lfs),
         SubCommand::New { name, cargo, lfs } => new(name, cargo, lfs),
         SubCommand::Clone { uri, branch } => clone(uri, branch),
+        SubCommand::Checkout { branch, b, force } => checkout(branch, b, force),
     }
 }
