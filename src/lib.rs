@@ -92,12 +92,13 @@ pub fn checkout(branch: String, b: bool, force: bool) -> Result<()> {
     let mut builder = CommandBuilder::new();
     let path = format!("../{}", &branch);
     if b {
-        builder.args(&["git", "worktree", "add", &path]);
+        builder.args(&["git", "worktree", "add"]);
         if force {
             builder.arg("-f");
         }
+        builder.arg(&path);
     } else {
-        builder.args(&["git", "worktree", "add", &path, &branch]);
+        builder.args(&["git", "worktree", "add", "-f", &path, &branch]);
     }
 
     builder.into_command().spawn()?.wait()?;
