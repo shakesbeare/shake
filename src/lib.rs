@@ -1,3 +1,5 @@
+pub mod create;
+
 use anyhow::Result;
 use clap::Parser;
 use std::process::Command;
@@ -16,6 +18,9 @@ pub enum SubCommand {
         /// Initialize the project with cargo
         #[arg(long = "cargo")]
         cargo: bool,
+        /// Initialize the project with go
+        #[arg(long = "go")]
+        go: bool,
         /// Install git-lfs into the project
         #[arg(long = "lfs")]
         lfs: bool,
@@ -27,6 +32,9 @@ pub enum SubCommand {
         /// Initialize the project with cargo
         #[arg(long = "cargo")]
         cargo: bool,
+        /// Initialize the project with go
+        #[arg(long = "go")]
+        go: bool,
         /// Install git-lfs into the project
         #[arg(long = "lfs")]
         lfs: bool,
@@ -51,97 +59,6 @@ pub enum SubCommand {
         #[arg(long = "force", short)]
         force: bool,
     },
-}
-
-pub fn init(cargo: bool, lfs: bool) -> Result<()> {
-    // project file structure
-    // project-name/
-    //     .git # the bare repository
-    //     main/ # worktrees!
-
-    // initialize git
-    Command::new("git")
-        .args(["init", "--bare", ".git"])
-        .output()
-        .expect("failed to initialize git");
-
-    // initialize the project folders
-    std::fs::create_dir("temp").expect("failed to create temp dir");
-    std::env::set_current_dir("temp").expect("failed to change to a temp dir");
-
-    Command::new("git")
-        .arg("init")
-        .output()
-        .expect("failed to initialize temp inner repository");
-
-    std::fs::File::create("README.md").expect("failed to create README.md");
-
-    // handle optional project details
-    if cargo {
-        Command::new("cargo")
-            .arg("init")
-            .spawn()
-            .expect("failed to spawn `cargo init`")
-            .wait()?;
-    }
-
-    if lfs {
-        Command::new("git")
-            .args(["lfs", "install"])
-            .spawn()
-            .expect("failed to install git-lfs")
-            .wait()?;
-    }
-
-    Command::new("git")
-        .args(["add", "."])
-        .output()
-        .expect("failed to add temp dir to git repository");
-    Command::new("git")
-        .args(["commit", "-m", "\"initial commit\""])
-        .output()
-        .expect("failed to commit to git");
-    Command::new("git")
-        .args(["remote", "add", "origin", "../.git"])
-        .output()
-        .expect("failed to add git remote");
-    Command::new("git")
-        .args(["push", "-u", "origin", "main"])
-        .output()
-        .expect("failed to push to remote");
-
-    // finish setting up project
-    let _ = std::env::set_current_dir("..");
-    Command::new("rm")
-        .args(["-rf", "temp"])
-        .output()
-        .expect("failed to remove temp dir");
-    Command::new("git")
-        .args(["worktree", "add", "main"])
-        .output()
-        .expect("failed to initialize git worktree");
-
-    // remove the temp origin
-    let _ = std::env::set_current_dir("main");
-    Command::new("git")
-        .args(["remote", "remove", "origin"])
-        .output()
-        .expect("failed to remove temporary origin");
-
-    Ok(())
-}
-
-pub fn new(name: String, cargo: bool, lfs: bool) -> Result<()> {
-    // create new dir with the project name
-    std::fs::create_dir(&name).expect("failed to create new project directory");
-
-    // change to the new directory
-    std::env::set_current_dir(&name)
-        .expect("failed to change to new project directory");
-
-    init(cargo, lfs)?;
-
-    Ok(())
 }
 
 struct CommandBuilder<'a> {
