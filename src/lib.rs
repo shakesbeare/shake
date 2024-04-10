@@ -5,6 +5,8 @@ use clap::Parser;
 use std::process::Command;
 
 #[derive(Debug, Parser)]
+#[command(name = "Shake")]
+#[command(version, about)]
 pub struct Cli {
     #[clap(subcommand)]
     pub subcmd: SubCommand,
