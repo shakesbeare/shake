@@ -35,6 +35,29 @@ master/
   README.md
 ```
 
+You can also use shake to ease the creation of new worktrees with an interface that is similar
+to `git checkout`.
+
+```sh
+shake checkout my-cool-branch
+shake checkout brand-new-branch # doesn't work!
+shake checkout -b brand-new-branch
+shake checkout -b existing-branch # doesn't work!
+shake checkout -bf existing-branch # new branch shadows existing branch
+```
+```
+./
+.git/
+main/
+  README.md
+my-cool-branch/
+    README.md
+brand-new-branch/
+    README.md
+existing-branch/
+    README.md
+```
+
 # Installation
 
 ## Build from source 
@@ -47,10 +70,5 @@ sudo cargo xtask install
 
 # Requirements
 
-- MacOS
-- Rustup Toolchain
-
-# Planned Features
-
-- Improved help command
-
+- MacOS (for manpage installation) # support for other operating systems should be trivial to implement
+- Cargo
