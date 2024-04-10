@@ -1,7 +1,8 @@
 use shake::*;
 use clap::Parser;
+use anyhow::Result;
 
-fn main() {
+fn main() -> Result<()> {
     let app = Cli::parse();
 
     match app.subcmd {

@@ -1,6 +1,7 @@
 
 use clap::Parser;
 use std::process::Command;
+use anyhow::Result;
 
 #[derive(Debug, Parser)]
 pub struct Cli {
@@ -41,7 +42,7 @@ pub enum SubCommand {
     },
 }
 
-pub fn init(cargo: bool, lfs: bool) {
+pub fn init(cargo: bool, lfs: bool) -> Result<()> {
     // project file structure
     // project-name/
     //     .git # the bare repository
@@ -66,19 +67,19 @@ pub fn init(cargo: bool, lfs: bool) {
 
     // handle optional project details
     if cargo {
-        let _ = Command::new("cargo")
+        Command::new("cargo")
             .arg("init")
             .spawn()
             .expect("failed to spawn `cargo init`")
-            .wait();
+            .wait()?;
     }
 
     if lfs {
-        let _ = Command::new("git")
+        Command::new("git")
             .args(["lfs", "install"])
             .spawn()
             .expect("failed to install git-lfs")
-            .wait();
+            .wait()?;
     }
 
     Command::new("git")
@@ -115,9 +116,11 @@ pub fn init(cargo: bool, lfs: bool) {
         .args(["remote", "remove", "origin"])
         .output()
         .expect("failed to remove temporary origin");
+
+    Ok(())
 }
 
-pub fn new(name: String, cargo: bool, lfs: bool) {
+pub fn new(name: String, cargo: bool, lfs: bool) -> Result<()> {
     // create new dir with the project name
     std::fs::create_dir(&name).expect("failed to create new project directory");
 
@@ -126,9 +129,11 @@ pub fn new(name: String, cargo: bool, lfs: bool) {
         .expect("failed to change to new project directory");
 
     init(cargo, lfs);
+
+    Ok(())
 }
 
-pub fn clone(uri: String, branch: String) {
+pub fn clone(uri: String, branch: String) -> Result<()> {
     // get folder name from repo string
     // format: git@github.com:username/repo.git
     //     or: host:username/repo.git
@@ -165,7 +170,7 @@ pub fn clone(uri: String, branch: String) {
     }
 
     let worktree_status = Command::new("git")
-        .args(["worktree", "add", branch])
+        .args(["worktree", "add", &branch])
         .spawn()
         .expect("failed to checkout main worktree")
         .wait();
@@ -176,13 +181,18 @@ pub fn clone(uri: String, branch: String) {
                 // clean up folder
                 let _ = std::env::set_current_dir("..");
                 let _ = std::fs::remove_dir_all(format!("./{}", folder_name));
+                eprintln!("could not create worktree");
+                std::process::exit(1);
             }
+            Ok(())
         }
         Err(e) => {
             eprintln!(
                 "An error occurred while attempting to create the worktree {}",
                 e
             );
+
+            Err(e.into())
         }
     }
 }
