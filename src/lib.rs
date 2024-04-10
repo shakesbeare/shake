@@ -128,7 +128,7 @@ pub fn new(name: String, cargo: bool, lfs: bool) -> Result<()> {
     std::env::set_current_dir(&name)
         .expect("failed to change to new project directory");
 
-    init(cargo, lfs);
+    init(cargo, lfs)?;
 
     Ok(())
 }
