@@ -100,11 +100,7 @@ pub fn checkout(branch: String, b: bool, force: bool) -> Result<()> {
         builder.args(&["git", "worktree", "add", &path, &branch]);
     }
 
-    builder
-        .into_command()
-        .spawn()
-        .expect("failed to spawn command")
-        .wait()?;
+    builder.into_command().spawn()?.wait()?;
 
     Ok(())
 }
@@ -128,8 +124,7 @@ pub fn clone(uri: String, branch: String) -> Result<()> {
 
     let clone_status = Command::new("git")
         .args(["clone", "--bare", &uri, ".git"])
-        .spawn()
-        .expect("failed to spawn `git clone` child process")
+        .spawn()?
         .wait();
 
     match clone_status {
@@ -147,8 +142,7 @@ pub fn clone(uri: String, branch: String) -> Result<()> {
 
     let worktree_status = Command::new("git")
         .args(["worktree", "add", &branch])
-        .spawn()
-        .expect("failed to checkout main worktree")
+        .spawn()?
         .wait();
 
     match worktree_status {
