@@ -150,8 +150,8 @@ pub fn clone(uri: String, branch: String) -> Result<()> {
         std::process::exit(1);
     };
     let folder_name = repo.trim_end_matches(".git");
-    let _ = std::fs::create_dir(folder_name);
-    let _ = std::env::set_current_dir(folder_name);
+    std::fs::create_dir(folder_name)?;
+    std::env::set_current_dir(folder_name)?;
 
     let clone_status = Command::new("git")
         .args(["clone", "--bare", &uri, ".git"])
@@ -162,8 +162,8 @@ pub fn clone(uri: String, branch: String) -> Result<()> {
         Ok(s) => {
             if !s.success() {
                 // clean up folder
-                let _ = std::env::set_current_dir("..");
-                let _ = std::fs::remove_dir_all(format!("./{}", folder_name));
+                std::env::set_current_dir("..")?;
+                std::fs::remove_dir_all(format!("./{}", folder_name))?;
             }
         }
         Err(e) => {
@@ -180,8 +180,8 @@ pub fn clone(uri: String, branch: String) -> Result<()> {
         Ok(s) => {
             if !s.success() {
                 // clean up folder
-                let _ = std::env::set_current_dir("..");
-                let _ = std::fs::remove_dir_all(format!("./{}", folder_name));
+                std::env::set_current_dir("..")?;
+                std::fs::remove_dir_all(format!("./{}", folder_name))?;
                 eprintln!("could not create worktree");
                 std::process::exit(1);
             }

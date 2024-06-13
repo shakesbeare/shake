@@ -67,14 +67,14 @@ pub fn init(cargo: bool, go: bool, lfs: bool) -> Result<()> {
         .output()?;
 
     // finish setting up project
-    let _ = std::env::set_current_dir("..");
+    std::env::set_current_dir("..")?;
     std::fs::remove_dir_all("temp")?;
     Command::new("git")
         .args(["worktree", "add", "main"])
         .output()?;
 
     // remove the temp origin
-    let _ = std::env::set_current_dir("main");
+    std::env::set_current_dir("main")?;
     Command::new("git")
         .args(["remote", "remove", "origin"])
         .output()?;

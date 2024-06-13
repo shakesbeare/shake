@@ -39,11 +39,11 @@ fn build_manpage() -> std::io::Result<()> {
     man.render(&mut buffer)?;
     std::fs::write(out_dir.join("shake.1"), buffer)?;
 
-    let _ = std::process::Command::new("gzip")
+    std::process::Command::new("gzip")
         .arg(out_dir.join("shake.1"))
         .spawn()
         .expect("failed to spawn gzip")
-        .wait();
+        .wait()?;
 
     Ok(())
 }
