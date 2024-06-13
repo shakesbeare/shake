@@ -68,9 +68,7 @@ pub fn init(cargo: bool, go: bool, lfs: bool) -> Result<()> {
 
     // finish setting up project
     let _ = std::env::set_current_dir("..");
-    Command::new("rm")
-        .args(["-rf", "temp"])
-        .output()?;
+    std::fs::remove_dir_all("temp")?;
     Command::new("git")
         .args(["worktree", "add", "main"])
         .output()?;

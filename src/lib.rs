@@ -1,8 +1,8 @@
 pub mod create;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Parser;
-use std::process::Command;
+use std::{path::Path, process::Command};
 
 #[derive(Debug, Parser)]
 #[command(name = "Shake")]
@@ -89,10 +89,38 @@ impl<'a> CommandBuilder<'a> {
     }
 }
 
+trait HasGit {
+    fn has_git(&self) -> bool;
+}
+
+impl HasGit for Path {
+    fn has_git(&self) -> bool {
+        for file in self.read_dir().unwrap() {
+            let Ok(f) = file else {
+                return false;
+            };
+            if f.file_name() == ".git" && f.file_type().unwrap().is_dir() {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 pub fn checkout(branch: String, b: bool, force: bool) -> Result<()> {
     // if -b flag is present, simply add the worktree
     let mut builder = CommandBuilder::new();
-    let path = format!("../{}", &branch);
+    let project_path = {
+        // search upwards for .git folder
+        let cwd = std::env::current_dir()?;
+        let mut git_dir = cwd.as_path();
+        while !git_dir.has_git() {
+            git_dir = git_dir.parent().context("dir should have a parent")?;
+        }
+        git_dir.to_path_buf()
+    };
+    let path = project_path.join(&branch);
+    let path = path.to_string_lossy();
     if b {
         builder.args(&["git", "worktree", "add"]);
         if force {
