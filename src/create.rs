@@ -1,7 +1,7 @@
 use crate::*;
 use std::process::Command;
 
-pub fn init(cargo: bool, go: bool, lfs: bool) -> Result<()> {
+pub fn init(cargo: bool, go: bool, lfs: bool, rye: bool) -> Result<()> {
     // project file structure
     // project-name/
     //     .git # the bare repository
@@ -24,24 +24,26 @@ pub fn init(cargo: bool, go: bool, lfs: bool) -> Result<()> {
     std::fs::create_dir("temp")?;
     std::env::set_current_dir("temp")?;
 
-    Command::new("git")
-        .arg("init")
-        .output()?;
+    Command::new("git").arg("init").output()?;
 
     std::fs::File::create("README.md")?;
 
     // handle optional project details
     if cargo {
-        Command::new("cargo")
-            .arg("init")
-            .spawn()?
-            .wait()?;
+        Command::new("cargo").arg("init").spawn()?.wait()?;
     }
 
     if go {
         let package_name = format!("changeme/{}", name);
         Command::new("go")
             .args(["mod", "init", &package_name])
+            .spawn()?
+            .wait()?;
+    }
+
+    if rye {
+        Command::new("rye")
+            .args(["init", "--script"])
             .spawn()?
             .wait()?;
     }
@@ -53,9 +55,7 @@ pub fn init(cargo: bool, go: bool, lfs: bool) -> Result<()> {
             .wait()?;
     }
 
-    Command::new("git")
-        .args(["add", "."])
-        .output()?;
+    Command::new("git").args(["add", "."]).output()?;
     Command::new("git")
         .args(["commit", "-m", "\"initial commit\""])
         .output()?;
@@ -82,14 +82,14 @@ pub fn init(cargo: bool, go: bool, lfs: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn new(name: String, cargo: bool, go: bool, lfs: bool) -> Result<()> {
+pub fn new(name: String, cargo: bool, go: bool, lfs: bool, rye: bool) -> Result<()> {
     // create new dir with the project name
     std::fs::create_dir(&name)?;
 
     // change to the new directory
     std::env::set_current_dir(&name)?;
 
-    init(cargo, go, lfs)?;
+    init(cargo, go, lfs, rye)?;
 
     Ok(())
 }
