@@ -74,10 +74,7 @@ fn install() -> std::io::Result<()> {
         .spawn()
         .expect("failed to spawn `cargo xtask manpage`")
         .wait()?;
-    std::fs::copy(
-        built_man_dir.join("shake.1.gz"),
-        manpath.join("shake.1.gz"),
-    )?;
+    std::fs::copy(built_man_dir.join("shake.1.gz"), manpath.join("shake.1.gz"))?;
 
     std::fs::remove_file(built_man_dir.join("shake.1.gz"))?;
 

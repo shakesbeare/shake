@@ -8,14 +8,21 @@ fn main() -> Result<()> {
     let app = Cli::parse();
 
     let app_result = match app.subcmd {
-        SubCommand::Init { cargo, go, lfs, rye } => init(cargo, go, lfs, rye),
+        SubCommand::Init {
+            cargo,
+            go,
+            lfs,
+            rye,
+            npm,
+        } => init(cargo, go, lfs, rye, npm),
         SubCommand::New {
             name,
             cargo,
             go,
             lfs,
-            rye
-        } => new(name, cargo, go, lfs, rye),
+            rye,
+            npm,
+        } => new(name, cargo, go, lfs, rye, npm),
         SubCommand::Clone { uri, branch } => clone(uri, branch),
         SubCommand::Checkout { branch, b, force } => checkout(branch, b, force),
     };

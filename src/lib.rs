@@ -26,6 +26,9 @@ pub enum SubCommand {
         /// Initialize the project with rye (Python)
         #[arg(long = "rye")]
         rye: bool,
+        /// Initialize the project with npm
+        #[arg(long = "npm")]
+        npm: bool,
         /// Install git-lfs into the project
         #[arg(long = "lfs")]
         lfs: bool,
@@ -43,6 +46,9 @@ pub enum SubCommand {
         /// Initialize the project with rye (Python)
         #[arg(long = "rye")]
         rye: bool,
+        /// Initialize the project with npm
+        #[arg(long = "npm")]
+        npm: bool,
         /// Install git-lfs into the project
         #[arg(long = "lfs")]
         lfs: bool,
