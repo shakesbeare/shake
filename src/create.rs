@@ -1,7 +1,7 @@
 use crate::*;
 use std::process::Command;
 
-pub fn init(cargo: bool, go: bool, lfs: bool, rye: bool, npm: bool) -> Result<()> {
+pub fn init(cargo: bool, go: bool, lfs: bool, rye: bool, npm: bool, dotnet: bool) -> Result<()> {
     // project file structure
     // project-name/
     //     .git # the bare repository
@@ -52,6 +52,10 @@ pub fn init(cargo: bool, go: bool, lfs: bool, rye: bool, npm: bool) -> Result<()
         Command::new("npm").args(["init", "-y"]).spawn()?.wait()?;
     }
 
+    if dotnet {
+        Command::new("dotnet").arg("new").spawn()?.wait()?;
+    }
+
     if lfs {
         Command::new("git")
             .args(["lfs", "install"])
@@ -93,6 +97,7 @@ pub fn new(
     lfs: bool,
     rye: bool,
     npm: bool,
+    dotnet: bool,
 ) -> Result<()> {
     // create new dir with the project name
     std::fs::create_dir(&name)?;
@@ -100,7 +105,7 @@ pub fn new(
     // change to the new directory
     std::env::set_current_dir(&name)?;
 
-    init(cargo, go, lfs, rye, npm)?;
+    init(cargo, go, lfs, rye, npm, dotnet)?;
 
     Ok(())
 }

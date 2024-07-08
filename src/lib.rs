@@ -29,6 +29,9 @@ pub enum SubCommand {
         /// Initialize the project with npm
         #[arg(long = "npm")]
         npm: bool,
+        /// Initialize the project with dotnet
+        #[arg(long = "dotnet")]
+        dotnet: bool,
         /// Install git-lfs into the project
         #[arg(long = "lfs")]
         lfs: bool,
@@ -49,6 +52,9 @@ pub enum SubCommand {
         /// Initialize the project with npm
         #[arg(long = "npm")]
         npm: bool,
+        /// Initialize the project with dotnet
+        #[arg(long = "dotnet")]
+        dotnet: bool,
         /// Install git-lfs into the project
         #[arg(long = "lfs")]
         lfs: bool,

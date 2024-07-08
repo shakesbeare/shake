@@ -14,7 +14,8 @@ fn main() -> Result<()> {
             lfs,
             rye,
             npm,
-        } => init(cargo, go, lfs, rye, npm),
+            dotnet,
+        } => init(cargo, go, lfs, rye, npm, dotnet),
         SubCommand::New {
             name,
             cargo,
@@ -22,7 +23,8 @@ fn main() -> Result<()> {
             lfs,
             rye,
             npm,
-        } => new(name, cargo, go, lfs, rye, npm),
+            dotnet,
+        } => new(name, cargo, go, lfs, rye, npm, dotnet),
         SubCommand::Clone { uri, branch } => clone(uri, branch),
         SubCommand::Checkout { branch, b, force } => checkout(branch, b, force),
     };
