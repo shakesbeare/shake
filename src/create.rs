@@ -109,11 +109,11 @@ pub fn new(
     Ok(())
 }
 
+#[cfg(debug_assertions)]
 mod test {
     use std::fs::*;
 
     #[allow(unused)]
-    #[cfg(debug_assertions)]
     fn print_dir(path: &str) -> anyhow::Result<()> {
         for entry in read_dir(path)?.flatten() {
             println!("{:?}", entry);
@@ -132,14 +132,13 @@ mod test {
         create_dir("test_init").unwrap();
         std::env::set_current_dir("./test_init").unwrap();
         super::init(false, false, false, false, false, false).unwrap();
-        print_dir(".").unwrap();
 
-        assert!(exists(".git").unwrap());
-        // assert!(exists("main").unwrap());
+        assert!(std::fs::exists(".git").unwrap());
+        // assert!(std::fs::exists("main").unwrap());
         assert!(metadata(".git").unwrap().is_dir());
         assert!(metadata("main").unwrap().is_dir());
 
-        assert!(exists("main/README.md").unwrap());
+        assert!(std::fs::exists("main/README.md").unwrap());
         assert!(metadata("main/README.md").unwrap().is_file());
 
         std::env::set_current_dir(cur).unwrap();
@@ -151,18 +150,17 @@ mod test {
         let cur = std::env::current_dir().unwrap();
 
         super::new("test_new".to_string(), false, false, false, false, false, false).unwrap();
-        print_dir(".").unwrap();
 
-        assert!(exists("test_new").unwrap());
+        assert!(std::fs::exists("test_new").unwrap());
         assert!(metadata("test_new").unwrap().is_dir());
         std::env::set_current_dir("test_new").unwrap();
 
-        assert!(exists(".git").unwrap());
-        // assert!(exists("main").unwrap());
+        assert!(std::fs::exists(".git").unwrap());
+        // assert!(std::fs::exists("main").unwrap());
         assert!(metadata(".git").unwrap().is_dir());
         assert!(metadata("main").unwrap().is_dir());
 
-        assert!(exists("main/README.md").unwrap());
+        assert!(std::fs::exists("main/README.md").unwrap());
         assert!(metadata("main/README.md").unwrap().is_file());
 
         std::env::set_current_dir(cur).unwrap();
@@ -175,13 +173,13 @@ mod test {
 
         super::new("test_cargo".to_string(), true, false, false, false, false, false).unwrap();
 
-        assert!(exists("test_cargo").unwrap());
+        assert!(std::fs::exists("test_cargo").unwrap());
         assert!(metadata("test_cargo").unwrap().is_dir());
         std::env::set_current_dir("test_cargo/main").unwrap();
 
-        assert!(exists("src").unwrap());
-        assert!(exists("Cargo.toml").unwrap());
-        assert!(exists(".gitignore").unwrap());
+        assert!(std::fs::exists("src").unwrap());
+        assert!(std::fs::exists("Cargo.toml").unwrap());
+        assert!(std::fs::exists(".gitignore").unwrap());
 
         assert!(metadata("src").unwrap().is_dir());
         assert!(metadata("Cargo.toml").unwrap().is_file());
