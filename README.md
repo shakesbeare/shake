@@ -14,12 +14,12 @@ shake new my-fantastic-project
 Shake enforces a worktree-based project structure which looks like this:
 
 ```
-./
-.git/
-main/ 
-  README.md
-branch/
-  README.md
+my-fantastic-project/
+  .git/
+  main/ 
+    README.md
+  branch/
+    README.md
 ```
 
 Shake also provides a wrapper for cloning repositories to quickly get into action. You can optionally
@@ -29,10 +29,10 @@ provide a different branch name to check out than `main`.
 shake clone -b master git@github.com:username/repo.git
 ```
 ```
-./
-.git/
-master/
-  README.md
+repo/
+  .git/
+  master/
+    README.md
 ```
 
 You can also use shake to ease the creation of new worktrees with an interface that is similar
