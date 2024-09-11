@@ -110,11 +110,11 @@ pub fn new(
 }
 
 mod test {
+    use std::fs::*;
+
     #[allow(unused)]
     #[cfg(debug_assertions)]
     fn print_dir(path: &str) -> anyhow::Result<()> {
-        use std::fs::*;
-
         for entry in read_dir(path)?.flatten() {
             println!("{:?}", entry);
             if entry.metadata()?.is_dir() {
@@ -127,8 +127,6 @@ mod test {
 
     #[test]
     fn test_init() {
-        use std::fs::*;
-
         std::env::set_current_dir("/tmp/shake").unwrap();
         let cur = std::env::current_dir().unwrap();
         create_dir("test_init").unwrap();
@@ -149,8 +147,6 @@ mod test {
 
     #[test]
     fn test_new() {
-        use std::fs::*;
-
         std::env::set_current_dir("/tmp/shake").unwrap();
         let cur = std::env::current_dir().unwrap();
 
@@ -174,8 +170,6 @@ mod test {
 
     #[test]
     fn test_cargo() {
-        use std::fs::*;
-
         std::env::set_current_dir("/tmp/shake").unwrap();
         let cur = std::env::current_dir().unwrap();
 
