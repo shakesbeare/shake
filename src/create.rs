@@ -9,7 +9,7 @@ pub fn init(cargo: bool, go: bool, lfs: bool, rye: bool, npm: bool, dotnet: bool
 
     // initialize git
     Command::new("git")
-        .args(["init", "--bare", ".git"])
+        .args(["init", "--bare", ".git", "--initial-branch", "main"])
         .output()?;
 
     let name = std::env::current_dir()
@@ -24,7 +24,7 @@ pub fn init(cargo: bool, go: bool, lfs: bool, rye: bool, npm: bool, dotnet: bool
     std::fs::create_dir("temp")?;
     std::env::set_current_dir("temp")?;
 
-    Command::new("git").arg("init").output()?;
+    Command::new("git").args(["init", "--initial-branch", "main"]).output()?;
 
     std::fs::File::create("README.md")?;
 
@@ -87,6 +87,8 @@ pub fn init(cargo: bool, go: bool, lfs: bool, rye: bool, npm: bool, dotnet: bool
         .args(["remote", "remove", "origin"])
         .output()?;
 
+    std::env::set_current_dir("..")?;
+
     Ok(())
 }
 
@@ -99,13 +101,98 @@ pub fn new(
     npm: bool,
     dotnet: bool,
 ) -> Result<()> {
-    // create new dir with the project name
-    std::fs::create_dir(&name)?;
-
-    // change to the new directory
+    std::fs::create_dir_all(&name)?;
     std::env::set_current_dir(&name)?;
-
     init(cargo, go, lfs, rye, npm, dotnet)?;
+    std::env::set_current_dir("..")?;
 
     Ok(())
+}
+
+mod test {
+    #[allow(unused)]
+    #[cfg(debug_assertions)]
+    fn print_dir(path: &str) -> anyhow::Result<()> {
+        use std::fs::*;
+
+        for entry in read_dir(path)?.flatten() {
+            println!("{:?}", entry);
+            if entry.metadata()?.is_dir() {
+                print_dir(entry.path().to_str().unwrap())?;
+            }
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_init() {
+        use std::fs::*;
+
+        std::env::set_current_dir("/tmp/shake").unwrap();
+        let cur = std::env::current_dir().unwrap();
+        create_dir("test_init").unwrap();
+        std::env::set_current_dir("./test_init").unwrap();
+        super::init(false, false, false, false, false, false).unwrap();
+        print_dir(".").unwrap();
+
+        assert!(exists(".git").unwrap());
+        // assert!(exists("main").unwrap());
+        assert!(metadata(".git").unwrap().is_dir());
+        assert!(metadata("main").unwrap().is_dir());
+
+        assert!(exists("main/README.md").unwrap());
+        assert!(metadata("main/README.md").unwrap().is_file());
+
+        std::env::set_current_dir(cur).unwrap();
+    }
+
+    #[test]
+    fn test_new() {
+        use std::fs::*;
+
+        std::env::set_current_dir("/tmp/shake").unwrap();
+        let cur = std::env::current_dir().unwrap();
+
+        super::new("test_new".to_string(), false, false, false, false, false, false).unwrap();
+        print_dir(".").unwrap();
+
+        assert!(exists("test_new").unwrap());
+        assert!(metadata("test_new").unwrap().is_dir());
+        std::env::set_current_dir("test_new").unwrap();
+
+        assert!(exists(".git").unwrap());
+        // assert!(exists("main").unwrap());
+        assert!(metadata(".git").unwrap().is_dir());
+        assert!(metadata("main").unwrap().is_dir());
+
+        assert!(exists("main/README.md").unwrap());
+        assert!(metadata("main/README.md").unwrap().is_file());
+
+        std::env::set_current_dir(cur).unwrap();
+    }
+
+    #[test]
+    fn test_cargo() {
+        use std::fs::*;
+
+        std::env::set_current_dir("/tmp/shake").unwrap();
+        let cur = std::env::current_dir().unwrap();
+
+        super::new("test_cargo".to_string(), true, false, false, false, false, false).unwrap();
+
+        assert!(exists("test_cargo").unwrap());
+        assert!(metadata("test_cargo").unwrap().is_dir());
+        std::env::set_current_dir("test_cargo/main").unwrap();
+
+        assert!(exists("src").unwrap());
+        assert!(exists("Cargo.toml").unwrap());
+        assert!(exists(".gitignore").unwrap());
+
+        assert!(metadata("src").unwrap().is_dir());
+        assert!(metadata("Cargo.toml").unwrap().is_file());
+        assert!(metadata(".gitignore").unwrap().is_file());
+
+        std::env::set_current_dir(cur).unwrap();
+    }
 }

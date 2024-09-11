@@ -4,6 +4,17 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use std::{path::Path, process::Command};
 
+#[cfg(debug_assertions)]
+pub fn setup_test_dir() -> Result<()> {
+    use std::path::PathBuf;
+    let path = PathBuf::from("/tmp/shake");
+    if path.exists() {
+        std::fs::remove_dir_all("/tmp/shake")?;
+    }
+    std::fs::create_dir(path)?;
+    Ok(())
+}
+
 #[derive(Debug, Parser)]
 #[command(name = "Shake")]
 #[command(version, about)]

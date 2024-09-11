@@ -68,6 +68,16 @@ To install `shake`, clone the repo and run the following command:
 sudo cargo xtask install
 ```
 
+# Testing
+
+```
+cargo xtask test
+```
+
+`shake` requires some setup and teardown for testing the filesystem changes, so tests will fail if
+the usual command is used. This system is extremely scuffed (testing the `--cargo` flag requires
+manually saving and rewriting `Cargo.toml` to avoid workspace members being added).
+
 # Requirements
 
 - MacOS (for manpage installation) # support for other operating systems should be trivial to implement

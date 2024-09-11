@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::process::Stdio;
 
 use clap::CommandFactory;
 use clap::Parser;
@@ -17,6 +18,9 @@ enum SubCommand {
     /// Install shake to the system
     #[clap(name = "install")]
     Install,
+    /// Run tests
+    #[clap(name = "test")]
+    Test,
 }
 
 fn main() -> std::io::Result<()> {
@@ -25,15 +29,15 @@ fn main() -> std::io::Result<()> {
     match app.subcmd {
         SubCommand::Manpage => build_manpage()?,
         SubCommand::Install => install()?,
+        SubCommand::Test => test(),
     }
 
     Ok(())
 }
 
 fn build_manpage() -> std::io::Result<()> {
-    let out_dir = std::path::PathBuf::from(
-        std::env::var_os("OUT_DIR").ok_or(std::io::ErrorKind::NotFound)?,
-    );
+    let out_dir =
+        std::path::PathBuf::from(std::env::var_os("OUT_DIR").ok_or(std::io::ErrorKind::NotFound)?);
     let man = clap_mangen::Man::new(shake::Cli::command());
     let mut buffer: Vec<u8> = Default::default();
     man.render(&mut buffer)?;
@@ -79,4 +83,25 @@ fn install() -> std::io::Result<()> {
     std::fs::remove_file(built_man_dir.join("shake.1.gz"))?;
 
     Ok(())
+}
+
+fn test() {
+    use std::process::Command;
+    let manifest = std::fs::read_to_string("./Cargo.toml").unwrap();
+    shake::setup_test_dir().unwrap();
+    assert!(std::fs::exists("/tmp/shake").unwrap());
+    let current_dir = std::env::current_dir().unwrap();
+
+    if Command::new("cargo")
+        .args(["test", "--manifest-path", current_dir.join("Cargo.toml").to_str().unwrap(), "--", "--test-threads=1"])
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .output()
+        .is_err()
+    {
+        println!("An error occurred while attempting to run tests");
+    }
+    std::env::set_current_dir(current_dir).unwrap();
+    std::fs::remove_dir_all("/tmp/shake").unwrap();
+    std::fs::write("./Cargo.toml", &manifest).unwrap();
 }
